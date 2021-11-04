@@ -53,10 +53,6 @@ class Tweet(BaseModel):
 
 # Path Parameter
 
-@app.get(path="/")
-def home():
-    return {"Twitter Api":"Working!"}
-
 ## Users
 
 @app.post(
@@ -120,3 +116,53 @@ def delete_user():
     pass 
 
 ## Tweets
+
+@app.get(
+    path="/",
+    response_model=list[Tweet],
+    status_code= status.HTTP_200_OK,
+    summary="Show all Tweets",
+    tags=["Tweets"]
+)
+def home():
+    return {"Twitter Api":"Working!"}
+
+@app.get(
+    path="/tweets/{tweet_id}",
+    response_model=Tweet,
+    status_code= status.HTTP_200_OK,
+    summary="Show a specific Tweet",
+    tags=["Tweets"]
+)
+def show_a_tweet():
+    pass 
+
+@app.post(
+    path="/tweets",
+    response_model=Tweet,
+    status_code= status.HTTP_201_CREATED,
+    summary="Create a new Tweet",
+    tags=["Tweets"]
+)
+def create_a_tweet():
+    pass 
+
+@app.put(
+    path="/tweets/{tweet_id}/update",
+    response_model=Tweet,
+    status_code= status.HTTP_200_OK,
+    summary="Updates a specific Tweet",
+    tags=["Tweets"]
+)
+def update_a_tweet():
+    pass
+
+@app.delete(
+    path="/tweets/{tweet_id}/delete",
+    response_model=Tweet,
+    status_code= status.HTTP_200_OK,
+    summary="Delete a specific Tweet",
+    tags=["Tweets"]
+)
+def delete_a_tweet():
+    pass 
