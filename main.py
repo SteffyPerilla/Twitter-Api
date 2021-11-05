@@ -56,8 +56,8 @@ class Tweet(BaseModel):
         min_length=1,
         max_length=256
     )
-    create_at: datetime =Field(default=datetime.now())
-    update_at: Optional[datetime] =Field(default=None) 
+    created_at: datetime =Field(default=datetime.now())
+    updated_at: Optional[datetime] =Field(default=None) 
     by: Users = Field(...)
 
 # Path Parameter
@@ -194,8 +194,34 @@ def show_a_tweet():
     summary="Create a new Tweet",
     tags=["Tweets"]
 )
-def create_a_tweet():
-    pass 
+def create_a_tweet(tweet: Tweet = Body(...)):
+    """
+    Create a new Tweet 
+    
+    This path operation create a new tweet in the app 
+    
+    Parameters:
+        - tweet: Tweet
+        
+    returns a json with a basic tweet information:
+        tweet_id: UUID
+        content_ str
+        created_at: datetime
+        updated_at: Optional[datetime]
+        by: user
+    """
+    with open("tweet.json", "r+", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        tweet_dict = tweet.dict()
+        tweet_dict["tweet_id"] = str(tweet_dict["tweet_id"])
+        tweet_dict["created_at"] = str(tweet_dict["created_at"])
+        tweet_dict["updated_at"] = str(tweet_dict["updated_at"])
+        tweet_dict["by"]["user_id"] = str(tweet_dict["by"]["user_id"])
+        tweet_dict["by"]["birth_date"] = str(tweet_dict["by"]["birth_date"])
+        results.append(tweet_dict)
+        f.seek(0)
+        f.write(json.dumps(results))
+        return tweet 
 
 @app.put(
     path="/tweets/{tweet_id}/update",
