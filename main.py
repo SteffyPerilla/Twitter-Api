@@ -1,8 +1,10 @@
 # Python
-import json 
+import json
+import os
 from uuid import UUID
 from datetime import date, datetime
 from typing import Optional, List
+from fastapi.exceptions import HTTPException
 
 # Pydantic
 from pydantic import BaseModel
@@ -12,7 +14,7 @@ from pydantic import Field
 # FastApi
 from fastapi import FastAPI
 from fastapi import status
-from fastapi import Body
+from fastapi import Body, Path
 
 app = FastAPI()
 
@@ -142,8 +144,35 @@ def show_all_user():
     summary="Get a specific User",
     tags=["Users"]
 )
-def show_a_user():
-    pass 
+def show_a_user(user_id: str = Path(
+        ...,
+        title="User Id",
+        description="Id of the user"
+    )):
+    """
+    Show a user
+    
+    This path operation show all users in the app
+    
+    Parameters: user_id 
+    
+    Returns json list with an user in the app, with the following keys:
+        - user_id: UUID
+        - email: Emailstr
+        - first_name: str
+        - last_name: str 
+        - birth_date: date        
+      """
+    if os.path.exists("users.json"):
+        with open("users.json", "r", encoding="utf-8") as f:
+            results = json.load(f)
+
+        for user in results:
+            if user['user_id'] == user_id:
+                return user
+    
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail="User not found")
 
 @app.put(
     path="/users/{user_id}/update",
