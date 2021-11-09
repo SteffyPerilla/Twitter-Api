@@ -227,8 +227,35 @@ def home():
     summary="Show a specific Tweet",
     tags=["Tweets"]
 )
-def show_a_tweet():
-    pass 
+def show_a_tweet(tweet_id: str = Path(
+        ...,
+        title="Tweet Id",
+        description="Tweet Id of an user"
+    )):
+    """
+    Show a Tweet 
+    
+    This path operation show a tweet in the app
+    
+    Parameters: tweet_id 
+    
+    Returns json list with a tweet in the app, with the following keys:
+        tweet_id: UUID 
+        content: str
+        created_at: datetime
+        updated_at: Optional[datetime]
+        by: User     
+      """
+    if os.path.exists("tweet.json"):
+        with open("tweet.json", "r", encoding="utf-8") as f:
+            results = json.load(f)
+
+        for tweet in results:
+            if tweet['tweet_id'] == tweet_id:
+                return tweet
+    
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail="User not found")
 
 @app.post(
     path="/tweets",
