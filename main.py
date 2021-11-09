@@ -51,14 +51,16 @@ class UserRegister(Users):
         min_length=8,
         max_length=64
     )
-   
-class Tweet(BaseModel):
+
+class BaseTweet(BaseModel):
     tweet_id: UUID = Field(...)
     content: str = Field(
         ...,
         min_length=1,
         max_length=256
     )
+
+class Tweet(BaseTweet):
     created_at: datetime =Field(default=datetime.now())
     updated_at: Optional[datetime] =Field(default=None) 
     by: Users = Field(...)
@@ -379,8 +381,52 @@ def create_a_tweet(tweet: Tweet = Body(...)):
     summary="Updates a specific Tweet",
     tags=["Tweets"]
 )
-def update_a_tweet():
-    pass
+def update_a_tweet(tweet_id: str = Path(
+        ...,
+        title='Tweet Id',
+        description='ID of the tweet to update'),
+        tweet: BaseTweet = Body(...),)-> Tweet:
+        """
+        Update a tweet
+            
+        This path operation update a tweet in the app
+            
+        Parameters: tweet_id: str
+                    tweet: Tweet
+            
+        returns a json with a basic tweet information:
+            tweet_id: UUID
+            content_ str
+            created_at: datetime
+            updated_at: Optional[datetime]
+            by: user    
+        """
+        index = None 
+        if os.path.exists("tweet.json"):
+            with open("tweet.json", "r+", encoding='utf-8') as f:
+                tweets = json.load(f)
+
+                for idx, raw_tweet in enumerate(tweets):
+                    if raw_tweet['tweet_id'] == tweet_id:
+                        index = idx
+                        break 
+
+                if index is not None:
+                    tweets[index].update({
+                        **tweet.dict(),
+                        'tweet_id' : str(tweet.tweet_id),
+                        'updated_at': str(datetime.now()), 
+                    })
+
+                    f.seek(0)
+                    f.truncate()
+                    f.write(json.dumps(tweets)) 
+
+        if index is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+            detail='Tweet not found.')  
+
+        return tweets[index]     
 
 @app.delete(
     path="/tweets/{tweet_id}/delete",
@@ -389,5 +435,38 @@ def update_a_tweet():
     summary="Delete a specific Tweet",
     tags=["Tweets"]
 )
-def delete_a_tweet():
-    pass 
+def delete_a_tweet(tweet_id : str = Path(...,
+                title='Id Tweet',
+                description='Id of the tweet a delete'
+    )):
+    """
+    Delete a Tweet
+    
+    Parameters:
+    - tweet_id: str 
+    
+    returns HTTP_204_NO_CONTENT 
+    """
+    found = False
+    if os.path.exists("tweet.json"):
+        with open("tweet.json", 'r+', encoding='utf-8') as f:
+            raw_tweets = json.load(f)
+
+            tweets=[]
+
+            for tweet in raw_tweets:
+                if tweet["tweet_id"] == tweet_id:
+                    found = True 
+                else:
+                    tweets.append(tweet)
+            if found:
+                f.seek(0)
+                f.truncate()
+                f.write(json.dumps(tweets))
+
+    if not found:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='User not found')
+    
+    return Response(status_code=status.HTTP_204_NO_CONTENT)       
+
