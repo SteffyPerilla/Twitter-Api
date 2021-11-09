@@ -15,6 +15,7 @@ from pydantic import Field
 from fastapi import FastAPI
 from fastapi import status
 from fastapi import Body, Path
+from starlette.responses import Response
 
 app = FastAPI()
 
@@ -181,8 +182,53 @@ def show_a_user(user_id: str = Path(
     summary="Updates a specific User",
     tags=["Users"]
 )
-def update_user():
-    pass 
+def update_user(user_id: str = Path(
+        ...,
+        title='User Id',
+        description='ID of the user to update'),
+        user: UserRegister = Body(...)):
+        """
+        Update a user
+            
+        This path operation update an user in the app
+            
+        Parameters: user_id: str
+                    user: UserRegister
+            
+        Returns json list with an user update in the app, with the following keys:
+            - user_id: UUID
+            - email: Emailstr
+            - first_name: str
+            - last_name: str 
+            - birth_date: date        
+        """
+        index = None 
+        if os.path.exists("users.json"):
+            with open("users.json", "r+", encoding='utf-8') as f:
+                users = json.load(f)
+
+                for idx, raw_user in enumerate(users):
+                    if raw_user['user_id'] == user_id:
+                        index = idx
+                        break 
+
+                if index is not None:
+                    users[index].update({
+                        **user.dict(),
+                        'user_id' : str(user.user_id),
+                        'birth_date' : str(user.birth_date),
+                        'updated_at': str(datetime.now()), 
+                    })
+
+                    f.seek(0)
+                    f.truncate()
+                    f.write(json.dumps(users)) 
+
+        if index is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+            detail='User not found.')  
+
+        return users[index]     
 
 @app.delete(
     path="/users/{user_id}/delete",
@@ -191,8 +237,41 @@ def update_user():
     summary="Delete a User",
     tags=["Users"]
 )
-def delete_user():
-    pass 
+def delete_user(user_id : str = Path(...,
+                title='Id User',
+                description='Id of the user a delete'
+    )):
+    """
+    Delete a User
+    
+    Parameters:
+    - user_id: str 
+    
+    returns HTTP_204_NO_CONTENT 
+    """
+    found = False
+    if os.path.exists("users.json"):
+        with open("users.json", 'r+', encoding='utf-8') as f:
+            raw_users = json.load(f)
+
+            users=[]
+
+            for raw_user in raw_users:
+                if raw_user["user_id"] == user_id:
+                    found = True 
+                else:
+                    users.append(raw_user)
+            if found:
+                f.seek(0)
+                f.truncate()
+                f.write(json.dumps(users))
+
+    if not found:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='User not found')
+    
+    return Response(status_code=status.HTTP_204_NO_CONTENT,)       
+
 
 ## Tweets
 
