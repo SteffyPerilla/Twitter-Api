@@ -23,25 +23,29 @@ app = FastAPI()
 
 class UserBase(BaseModel):
     user_id : UUID = Field(...)
-    email: EmailStr = Field(...)
+    email: EmailStr = Field(...,
+    example="chicos@gmail.com")
 
 class UserLogin(UserBase):
     password: str = Field(
         ...,
         min_length=8,
-        max_length=64
+        max_length=64,
+        example="HolaChicos"
     )
 
 class Users(UserBase):
     first_name: str = Field(
         ...,
         min_length=1,
-        max_length=50
+        max_length=50,
+        example="Stefanny"
     ) 
     last_name: str = Field(
         ...,
         min_length=1,
-        max_length=50
+        max_length=50,
+        example="Perilla"
     ) 
     birth_date: Optional[date] = Field(default=None)
 
@@ -49,7 +53,8 @@ class UserRegister(Users):
      password: str = Field(
         ...,
         min_length=8,
-        max_length=64
+        max_length=64,
+        example="HolaChicos"
     )
 
 class BaseTweet(BaseModel):
@@ -57,7 +62,8 @@ class BaseTweet(BaseModel):
     content: str = Field(
         ...,
         min_length=1,
-        max_length=256
+        max_length=256,
+        example="Es el mejor tweet"
     )
 
 class Tweet(BaseTweet):
@@ -150,7 +156,8 @@ def show_all_user():
 def show_a_user(user_id: str = Path(
         ...,
         title="User Id",
-        description="Id of the user"
+        description="Id of the user",
+        example="3fa85f64-5717-4562-b3fc-2c963f66afa7"
     )):
     """
     Show a user
@@ -187,7 +194,8 @@ def show_a_user(user_id: str = Path(
 def update_user(user_id: str = Path(
         ...,
         title='User Id',
-        description='ID of the user to update'),
+        description='ID of the user to update',
+        example="3fa85f64-5717-4562-b3fc-2c963f66afa7"),
         user: UserRegister = Body(...)):
         """
         Update a user
@@ -241,7 +249,8 @@ def update_user(user_id: str = Path(
 )
 def delete_user(user_id : str = Path(...,
                 title='Id User',
-                description='Id of the user a delete'
+                description='Id of the user a delete',
+                example="3fa85f64-5717-4562-b3fc-2c963f66afa7"
     )):
     """
     Delete a User
@@ -311,7 +320,8 @@ def home():
 def show_a_tweet(tweet_id: str = Path(
         ...,
         title="Tweet Id",
-        description="Tweet Id of an user"
+        description="Tweet Id of an user",
+        example="3fa85f64-5717-4562-b3fc-2c963f66afa6"
     )):
     """
     Show a Tweet 
@@ -384,7 +394,8 @@ def create_a_tweet(tweet: Tweet = Body(...)):
 def update_a_tweet(tweet_id: str = Path(
         ...,
         title='Tweet Id',
-        description='ID of the tweet to update'),
+        description='ID of the tweet to update',
+        example="3fa85f64-5717-4562-b3fc-2c963f66afa6"),
         tweet: BaseTweet = Body(...),)-> Tweet:
         """
         Update a tweet
@@ -437,7 +448,8 @@ def update_a_tweet(tweet_id: str = Path(
 )
 def delete_a_tweet(tweet_id : str = Path(...,
                 title='Id Tweet',
-                description='Id of the tweet a delete'
+                description='Id of the tweet a delete',
+                example="3fa85f64-5717-4562-b3fc-2c963f66afa6"
     )):
     """
     Delete a Tweet
